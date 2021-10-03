@@ -1,0 +1,12 @@
+{
+  "name": "com.mycompany.utilities",
+  "version": "1.0.0",
+  "displayName": "Utilities",
+  "description": "A collection of useful classes.",
+  "unity": "2020.3",
+  "keywords": [ "utils", "unity" ],
+  "author": {
+    "name": "Shaan Vashisht",
+    "email": "shaan.w.vashisht@gmail.com"
+  }
+}

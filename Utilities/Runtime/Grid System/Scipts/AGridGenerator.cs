@@ -25,11 +25,21 @@ namespace Utilities.GridSystem
         protected GridPathfinding gridPathfinding;
         public GridPathfinding Pathfind { get => gridPathfinding; }
 
-        internal abstract void InstantiateGrid();
-        internal abstract void InstantiateTileGOs();
+        protected abstract void InstantiateGrid();
+        protected abstract void SetGridObject(int x, int y);
+        protected abstract void InstantiateTileGOs();
+        protected virtual void InstantiateTile(int x, int y)
+        {
+            tileGOs[x, y] = Instantiate(tilePrefab, XYToWorldSpace(x, y), Quaternion.identity, transform);
+            tileMRs[x, y] = tileGOs[x, y].GetComponentInChildren<MeshRenderer>();
 
-        internal abstract bool ValidXY(int x, int y);
-        internal bool ValidXY((int, int) pos)
+            Transform tr = movementManager.transforms[x, y];
+            if (tr != null)
+                tr.position = movementManager.XYToObjectTransformPosition(x, y);
+        }
+
+        protected internal abstract bool ValidXY(int x, int y);
+        protected internal bool ValidXY((int, int) pos)
         {
             return ValidXY(pos.Item1, pos.Item2);
         }
@@ -38,6 +48,12 @@ namespace Utilities.GridSystem
         public virtual Vector3 XYToWorldSpace((int, int) pos)
         {
             return XYToWorldSpace(pos.Item1, pos.Item2);
+        }
+
+        public abstract Vector3 XYToTileCenter(int x, int y, float hover);
+        public virtual Vector3 XYToTileCenter((int, int) pos, float hover)
+        {
+            return XYToTileCenter(pos.Item1, pos.Item2, hover);
         }
 
         public abstract (int, int) WorldSpaceToXY(Vector3 worldPos);

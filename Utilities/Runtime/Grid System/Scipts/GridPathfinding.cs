@@ -6,7 +6,7 @@ namespace Utilities.GridSystem
 {
     public class GridPathfinding
     {
-        internal AGrid<PathNode> grid;
+        public AGrid<PathNode> grid;
 
         private List<PathNode> openList;
         private List<PathNode> closedList;

@@ -9,6 +9,9 @@ namespace Utilities.GridSystem
         [SerializeField] bool adiacentDiagonals;
         [SerializeField] float tileSize;
 
+        public event System.Action OnGridGenerated;
+        public event System.Action OnTilesInstantiated;
+
         private void Awake()
         {
             movementManager.SetGridGen(this);
@@ -16,7 +19,7 @@ namespace Utilities.GridSystem
             InstantiateTileGOs();
         }
 
-        internal override void InstantiateGrid()
+        protected override void InstantiateGrid()
         {
             grid = new SqrGrid<T>(gridWidth, gridHeight, adiacentDiagonals);
 
@@ -27,15 +30,22 @@ namespace Utilities.GridSystem
             {
                 for (int y = 0; y < gridHeight; y++)
                 {
-                    grid.SetObject(x, y, startingState[x][y].value);
-
-                    movementManager.transforms[x, y] = startingState[x][y].transform;
-                    gridPathfinding.grid.SetObject(x, y, new PathNode(x, y, !startingState[x][y].unwalkable));
+                    SetGridObject(x, y);
                 }
             }
+
+            OnGridGenerated?.Invoke();
         }
 
-        internal override void InstantiateTileGOs()
+        protected override void SetGridObject(int x, int y)
+        {
+            grid.SetObject(x, y, startingState[x][y].value);
+
+            movementManager.transforms[x, y] = startingState[x][y].transform;
+            gridPathfinding.grid.SetObject(x, y, new PathNode(x, y, !startingState[x][y].unwalkable));
+        }
+
+        protected override void InstantiateTileGOs()
         {
             tileGOs = new GameObject[gridWidth, gridHeight];
             tileMRs = new MeshRenderer[gridWidth, gridHeight];
@@ -44,17 +54,14 @@ namespace Utilities.GridSystem
             {
                 for (int y = 0; y < gridHeight; y++)
                 {
-                    tileGOs[x, y] = Instantiate(tilePrefab, XYToWorldSpace(x, y), Quaternion.identity, transform);
-                    tileMRs[x, y] = tileGOs[x, y].GetComponentInChildren<MeshRenderer>();
-
-                    Transform tr = movementManager.transforms[x, y];
-                    if (tr != null)
-                        tr.position = movementManager.XYToObjectTransformPosition(x, y);
+                    InstantiateTile(x, y);
                 }
             }
+
+            OnTilesInstantiated?.Invoke();
         }
 
-        internal override bool ValidXY(int x, int y)
+        protected internal override bool ValidXY(int x, int y)
         {
             return x >= 0 && x < gridWidth && y >= 0 && y < gridHeight;
         }
@@ -63,6 +70,11 @@ namespace Utilities.GridSystem
         {
             Vector3 pos = new Vector3(x * tileSize, 0, y * tileSize);
             return transform.TransformPoint(pos);
+        }
+
+        public override Vector3 XYToTileCenter(int x, int y, float hover)
+        {
+            return new Vector3((x + 0.5f) * tileSize, hover, (y + 0.5f) * tileSize);
         }
 
         public override (int, int) WorldSpaceToXY(Vector3 worldPos)
@@ -74,10 +86,10 @@ namespace Utilities.GridSystem
 
             if (!ValidXY(x, y))
             {
+                Debug.LogWarning($"Received out of range coordinates ({worldPos}->{x}, {y}).");
+
                 x = 0;
                 y = 0;
-
-                Debug.LogWarning($"Received out of range coordinates ({worldPos}).");
             }
             return (x, y);
         }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using Utilities.Tweening;
 
 namespace Utilities.GridSystem
 {
@@ -69,7 +70,7 @@ namespace Utilities.GridSystem
 
                 gridGen.Grid.SwapObjects(startPos, endPos);
 
-                TweenManager.i.TweenVector3(tr.position, XYToObjectTransformPosition(endPos), time, tweeningTolerance,
+                TweenManager.Tween.TweenVector3(tr.position, XYToObjectTransformPosition(endPos), time, tweeningTolerance,
                     (Vector3 newpos) => { tr.position = newpos; },
                     () => { SwapTransforms(startPos, endPos); });
 
@@ -105,7 +106,7 @@ namespace Utilities.GridSystem
 
                 gridGen.Grid.SwapObjects(startPos, endPos);
 
-                TweenManager.i.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
+                TweenManager.Tween.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
                     (Vector3 newpos) => { tr.position = newpos; },
                     () => { SwapTransforms(startPos, endPos); });
 
@@ -141,7 +142,7 @@ namespace Utilities.GridSystem
 
                 gridGen.Grid.SwapObjects(startPos, endPos);
 
-                TweenManager.i.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
+                TweenManager.Tween.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
                     (Vector3 newpos) => { tr.position = newpos; },
                     () => { SwapTransforms(startPos, endPos); });
 

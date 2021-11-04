@@ -8,6 +8,9 @@ namespace Utilities.GridSystem
         [SerializeField] float tileSizeX = 1.6f;
         [SerializeField] float tileSizeZ = 1.88f;
 
+        public event System.Action OnGridGenerated;
+        public event System.Action OnTilesInstantiated;
+
         private void Awake()
         {
             movementManager.SetGridGen(this);
@@ -15,7 +18,7 @@ namespace Utilities.GridSystem
             InstantiateTileGOs();
         }
 
-        internal override void InstantiateGrid()
+        protected override void InstantiateGrid()
         {
             grid = new HexGrid<T>(gridWidth, gridHeight);
 
@@ -28,17 +31,24 @@ namespace Utilities.GridSystem
                 {
                     if ((x + y) % 2 == 0)
                     {
-                        int nY = x % 2 == 0 ? y / 2 : (y - 1) / 2;
-                        grid.SetObject(x, y, startingState[x][nY].value);
-
-                        movementManager.transforms[x, nY] = startingState[x][nY].transform;
-                        gridPathfinding.grid.SetObject(x, y, new PathNode(x, y, !startingState[x][nY].unwalkable));
+                        SetGridObject(x, y);
                     }
                 }
             }
+
+            OnGridGenerated?.Invoke();
         }
 
-        internal override void InstantiateTileGOs()
+        protected override void SetGridObject(int x, int y)
+        {
+            int nY = x % 2 == 0 ? y / 2 : (y - 1) / 2;
+            grid.SetObject(x, y, startingState[x][nY].value);
+
+            movementManager.transforms[x, nY] = startingState[x][nY].transform;
+            gridPathfinding.grid.SetObject(x, y, new PathNode(x, y, !startingState[x][nY].unwalkable));
+        }
+
+        protected override void InstantiateTileGOs()
         {
             tileGOs = new GameObject[gridWidth, 2 * gridHeight];
             tileMRs = new MeshRenderer[gridWidth, 2 * gridHeight];
@@ -49,18 +59,15 @@ namespace Utilities.GridSystem
                 {
                     if ((x + y) % 2 == 0)
                     {
-                        tileGOs[x, y] = Instantiate(tilePrefab, XYToWorldSpace(x, y), Quaternion.identity, transform);
-                        tileMRs[x, y] = tileGOs[x, y].GetComponentInChildren<MeshRenderer>();
-
-                        Transform tr = movementManager.transforms[x, y];
-                        if (tr != null)
-                            tr.position = movementManager.XYToObjectTransformPosition(x, y);
+                        InstantiateTile(x, y);
                     }
                 }
             }
+
+            OnTilesInstantiated?.Invoke();
         }
 
-        internal override bool ValidXY(int x, int y)
+        protected internal override bool ValidXY(int x, int y)
         {
             return x >= 0 && x < gridWidth && y >= 0 && y < 2 * gridHeight && (x + y) % 2 == 0;
         }
@@ -78,17 +85,23 @@ namespace Utilities.GridSystem
             }
             else
             {
-                y = Mathf.FloorToInt(pos.z / tileSizeZ * 2);
+                y = Mathf.RoundToInt((pos.z * 2 / tileSizeZ) - 1);
             }
 
             if (!ValidXY(x, y))
             {
+                Debug.LogWarning($"Received out of range coordinates ({worldPos}->{x}, {y}).");
+
                 x = 0;
                 y = 0;
-
-                Debug.LogWarning($"Received out of range coordinates ({worldPos}).");
             }
             return (x, y);
+        }
+
+        public override Vector3 XYToTileCenter(int x, int y, float hover)
+        {
+            Vector3 tileParent = XYToWorldSpace(x, y);
+            return tileParent + new Vector3(1, hover, 0.86f);
         }
 
         public override Vector3 XYToWorldSpace(int x, int y)

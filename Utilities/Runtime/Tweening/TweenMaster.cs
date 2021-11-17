@@ -4,8 +4,16 @@ using UnityEngine;
 
 namespace Utilities.Tweening
 {
-    public class TweenManager : MonoBehaviour
+    public class TweenMaster : MonoBehaviour
     {
+        public static TweenMaster Tween { get; private set; }
+
+        private void Awake()
+        {
+            if (Tween == null) Tween = this;
+            else Destroy(this);
+        }
+
         /// <summary>
         /// Tweens the given Vector3.
         /// </summary>
@@ -58,45 +66,20 @@ namespace Utilities.Tweening
         {
             for (int i = 0; i < sequence.Length; i++)
             {
-                bool nextStep = false;
-
-                StartCoroutine(_Vector3(vec3, sequence[i], time, tolerance, returnAct, () => { nextStep = true; }));
-                
-                while (!nextStep)
+                Vector3 speed = (sequence[i] - vec3) / time;
+                while (Vector3.Distance(vec3, sequence[i]) > tolerance)
                 {
+                    vec3 += speed * Time.deltaTime;
+                    returnAct(vec3);
+
                     yield return null;
                 }
+
                 vec3 = sequence[i];
+                returnAct(vec3);
 
                 loopCallback?.Invoke(i);
-                yield return new WaitForSeconds(wait);
-            }
 
-            foreach (Action callback in callbacks)
-            {
-                callback?.Invoke();
-            }
-        }
-        public void TweenVector3Sequence(float speed, Vector3 vec3, Vector3[] sequence, float wait, float tolerance, Action<Vector3> returnAct, Action<int> loopCallback = null, params Action[] callbacks)
-        {
-            StartCoroutine(_Vector3Sequence(speed, vec3, sequence, wait, tolerance, returnAct, loopCallback, callbacks));
-        }
-        private IEnumerator _Vector3Sequence(float speed, Vector3 vec3, Vector3[] sequence, float wait, float tolerance, Action<Vector3> returnAct, Action<int> loopCallback = null, params Action[] callbacks)
-        {
-            for (int i = 0; i < sequence.Length; i++)
-            {
-                bool nextStep = false;
-
-                float time = Vector3.Distance(vec3, sequence[i]) / speed;
-                StartCoroutine(_Vector3(vec3, sequence[i], time, tolerance, returnAct, () => { nextStep = true; }));
-
-                while (!nextStep)
-                {
-                    yield return null;
-                }
-                vec3 = sequence[i];
-
-                loopCallback?.Invoke(i);
                 yield return new WaitForSeconds(wait);
             }
 

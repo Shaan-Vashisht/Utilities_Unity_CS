@@ -70,7 +70,7 @@ namespace Utilities.GridSystem
 
                 gridGen.Grid.SwapObjects(startPos, endPos);
 
-                TweenManager.Tween.TweenVector3(tr.position, XYToObjectTransformPosition(endPos), time, tweeningTolerance,
+                TweenMaster.Tween.TweenVector3(tr.position, XYToObjectTransformPosition(endPos), time, tweeningTolerance,
                     (Vector3 newpos) => { tr.position = newpos; },
                     () => { SwapTransforms(startPos, endPos); });
 
@@ -106,9 +106,9 @@ namespace Utilities.GridSystem
 
                 gridGen.Grid.SwapObjects(startPos, endPos);
 
-                TweenManager.Tween.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
+                TweenMaster.Tween.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
                     (Vector3 newpos) => { tr.position = newpos; },
-                    () => { SwapTransforms(startPos, endPos); });
+                    callbacks: () => { SwapTransforms(startPos, endPos); });
 
                 foreach (Action callback in callbacks)
                 {
@@ -142,9 +142,9 @@ namespace Utilities.GridSystem
 
                 gridGen.Grid.SwapObjects(startPos, endPos);
 
-                TweenManager.Tween.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
+                TweenMaster.Tween.TweenVector3Sequence(tr.position, sequence, time, wait, tweeningTolerance,
                     (Vector3 newpos) => { tr.position = newpos; },
-                    () => { SwapTransforms(startPos, endPos); });
+                    callbacks: () => { SwapTransforms(startPos, endPos); });
 
                 foreach (Action callback in callbacks)
                 {

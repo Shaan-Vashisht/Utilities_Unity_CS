@@ -5,8 +5,11 @@ namespace Utilities.GridSystem
     public class HexGridGenerator<T> : AGridGenerator<T>
     {
         [Space]
-        [SerializeField] float tileSizeX = 1.6f;
-        [SerializeField] float tileSizeZ = 1.88f;
+        [SerializeField] protected float tileSizeX = 1.6f;
+        [SerializeField] protected float tileSizeZ = 1.88f;
+        [SerializeField] protected Vector3 tileCenterDelta = new Vector3(1f, 0f, 0.866f);
+
+        public float TileToTileDist { get => tileSizeX; }
 
         public event System.Action OnGridGenerated;
         public event System.Action OnTilesInstantiated;
@@ -76,16 +79,44 @@ namespace Utilities.GridSystem
         {
             Vector3 pos = transform.InverseTransformPoint(worldPos);
 
-            int x = Mathf.FloorToInt(pos.x / tileSizeX);
-            int y;
+            //Approximates the hex grid to a rectangle grid
+            int rawX = Mathf.FloorToInt(pos.x / tileSizeX);
+            int columnParity = rawX % 2;
+            int rawY = Mathf.FloorToInt((pos.z - (columnParity * tileSizeZ / 2)) / tileSizeZ) * 2 + columnParity;
 
-            if (x % 2 == 0)
+            //Calculates the relative position of the point within the tile rectangle
+            float relX = pos.x - rawX * tileSizeX;
+            float relY;
+            if (columnParity == 0)
+                relY = pos.z - (rawY * tileSizeZ / 2);
+            else
+                relY = pos.z - (rawY / 2 + 0.5f) * tileSizeZ;
+
+            if (relY < 0)
+                relY += tileSizeZ;
+
+            int x = rawX;
+            int y = rawY;
+            //The point is in the upper half of the rectangle
+            if (relY >= tileSizeZ / 2)
             {
-                y = Mathf.FloorToInt(pos.z * 2 / tileSizeZ);
+                //The point is above the hexagon's diagonal side,
+                //so it's actually in the tile up and to the left
+                if (relY > (1.732f * relX) + (tileSizeZ / 2))
+                {
+                    x--;
+                    y++;
+                }
             }
             else
             {
-                y = Mathf.RoundToInt((pos.z * 2 / tileSizeZ) - 1);
+                //The point is below the hexagon's diagonal side,
+                //so it's actually in the tile down and to the left
+                if (relY < (-1.732f * relX) + (tileSizeZ / 2))
+                {
+                    x--;
+                    y--;
+                }
             }
 
             if (!ValidXY(x, y))
@@ -101,7 +132,7 @@ namespace Utilities.GridSystem
         public override Vector3 XYToTileCenter(int x, int y, float hover)
         {
             Vector3 tileParent = XYToWorldSpace(x, y);
-            return tileParent + new Vector3(1, hover, 0.86f);
+            return tileParent + new Vector3(tileCenterDelta.x, hover, tileCenterDelta.z);
         }
 
         public override Vector3 XYToWorldSpace(int x, int y)

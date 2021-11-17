@@ -85,6 +85,20 @@ namespace Utilities.GridSystem
             return GetPath(pos1.Item1, pos1.Item2, pos2.Item1, pos2.Item2);
         }
 
+        public bool IsWalkable(int x, int y)
+        {
+            PathNode node = grid.GetObject(x, y);
+
+            if (node == null)
+                return false;
+
+            return node.isWalkable;
+        }
+        public bool IsWalkable((int, int) pos)
+        {
+            return IsWalkable(pos.Item1, pos.Item2);
+        }
+
         private PathNode GetLowestFCostNode(List<PathNode> list)
         {
             PathNode lowestCostNode = list[0];

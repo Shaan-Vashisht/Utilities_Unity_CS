@@ -38,8 +38,8 @@ namespace Utilities.GridSystem
                 tr.position = movementManager.XYToObjectTransformPosition(x, y);
         }
 
-        protected internal abstract bool ValidXY(int x, int y);
-        protected internal bool ValidXY((int, int) pos)
+        public abstract bool ValidXY(int x, int y);
+        public bool ValidXY((int, int) pos)
         {
             return ValidXY(pos.Item1, pos.Item2);
         }

@@ -70,7 +70,7 @@ namespace Utilities.GridSystem
             OnTilesInstantiated?.Invoke();
         }
 
-        protected internal override bool ValidXY(int x, int y)
+        public override bool ValidXY(int x, int y)
         {
             return x >= 0 && x < gridWidth && y >= 0 && y < 2 * gridHeight && (x + y) % 2 == 0;
         }

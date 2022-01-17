@@ -20,8 +20,12 @@ namespace Utilities.TickSystem
 
         private void Awake()
         {
-            if (Instances == null) Instances = new Dictionary<string, TickSystem>();
-            if (key == null) key = gameObject.name + " " + Instances.Count;
+            if (Instances == null)
+                Instances = new Dictionary<string, TickSystem>();
+
+            if (key == null) 
+                key = gameObject.name;
+
             Instances.Add(key, this);
         }
 
